@@ -40,60 +40,76 @@ public class SeleniumTest {
             emails.add(line.trim());
         }
         br.close();
-        Object[][] data = new Object[emails.size()][1];
-        for (int i = 0; i < emails.size(); i++) {
-            data[i][0] = emails.get(i);
+
+        int numSplits = Integer.parseInt(System.getProperty("numSplits", "1"));
+        List<List<String>> sublists = new ArrayList<>();
+        int total = emails.size();
+        int baseSize = total / numSplits;
+        int remainder = total % numSplits;
+        int start = 0;
+        for (int i = 0; i < numSplits; i++) {
+            int size = baseSize + (i < remainder ? 1 : 0);
+            sublists.add(emails.subList(start, start + size));
+            start += size;
+        }
+
+        Object[][] data = new Object[sublists.size()][2];
+        for (int i = 0; i < sublists.size(); i++) {
+            data[i][0] = sublists.get(i);
+            data[i][1] = 9222 + i;
         }
         return data;
     }
 
     @Test(dataProvider = "emailData")
-    void Setup(String email) throws InterruptedException, IOException, UnsupportedFlavorException {
-        System.out.println("Starting email send to " + email);
-
+    void Setup(List<String> emails, int port) throws InterruptedException, IOException, UnsupportedFlavorException {
         WebDriverManager.chromedriver().setup();
 
         ChromeOptions options = new ChromeOptions();
-//        options.addArguments("user-data-dir=C:/Users/Darsh/AppData/Local/Google/Chrome/User Data");
         options.addArguments("profile-directory=Default");
         options.addArguments("--remote-allow-origins=*");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--no-sandbox");
-//        options.addArguments("headless=new");
-        options.setExperimentalOption("debuggerAddress", "localhost:9222");
+        options.setExperimentalOption("debuggerAddress", "localhost:" + port);
         driver = new ChromeDriver(options);
-        driver.switchTo().newWindow(WindowType.TAB);
-        driver.get("https://mail.google.com/");
-        System.out.println("Navigated to Gmail");
-        Thread.sleep(2000);
-        waitUntilElementDisplayed("//div[normalize-space(text())='Compose']");
-        driver.findElement(By.xpath("//div[normalize-space(text())='Compose']")).click();
-        Thread.sleep(2000);
-        System.out.println("Click on Compose button");
 
-        waitUntilElementDisplayed("//input[@aria-label='To recipients']");
-        driver.findElement(By.xpath("//input[@aria-label='To recipients']")).sendKeys(email);
-        driver.findElement(By.xpath("//input[@aria-label='To recipients']")).sendKeys(Keys.ENTER);
-        System.out.println("Email address entered: " + email);
-        
-        waitUntilElementDisplayed("//input[@aria-label='Subject']");
-        driver.findElement(By.xpath("//input[@aria-label='Subject']")).sendKeys("Regarding Open Position for QA Engineer");
-        System.out.println("Subject entered");
+        for (String email : emails) {
+            System.out.println("Starting email send to " + email);
 
-        waitUntilElementDisplayed("//div[@aria-label='Message Body']");
-        driver.findElement(By.xpath("//div[@aria-label='Message Body']"))
-        .sendKeys("Hello sir/mam,\n\nI hope you're well. I came across your job posting for a QA Automation Engineer and I'm very interested in the opportunity. I have one year of hands-on experience in QA Automation along with manual testing, and I believe my skills would be a good fit for your team.\n\nI've attached my resume for your review. I'd be happy to discuss how I can contribute.\n\nThanks, looking forward to hearing from you.\n\nBest regards,\nContact: 9724795489");
-        System.out.println("Message body entered");
-        // Copy the file to clipboard and paste into the message body
-        copyFileToClipboard("src/main/resources/Darsh shah CV.pdf");
-        driver.findElement(By.xpath("//div[@aria-label='Message Body']")).click();
-        driver.findElement(By.xpath("//div[@aria-label='Message Body']")).sendKeys(Keys.chord(Keys.CONTROL, "v"));
-        System.out.println("Resume attached");
-        Thread.sleep(5000);
-        driver.findElement(By.xpath("//div[@aria-label='Send ‪(Ctrl-Enter)‬']")).click();
-        waitUntilElementDisplayed("//span[normalize-space(text())='Message sent']");
-        System.out.println("Email sent to " + email + " at " + System.currentTimeMillis());
-        driver.close();
+            driver.switchTo().newWindow(WindowType.TAB);
+            driver.get("https://mail.google.com/");
+            System.out.println("Navigated to Gmail");
+            Thread.sleep(2000);
+            waitUntilElementDisplayed("//div[normalize-space(text())='Compose']");
+            driver.findElement(By.xpath("//div[normalize-space(text())='Compose']")).click();
+            Thread.sleep(2000);
+            System.out.println("Click on Compose button");
+
+            waitUntilElementDisplayed("//input[@aria-label='To recipients']");
+            driver.findElement(By.xpath("//input[@aria-label='To recipients']")).sendKeys(email);
+            driver.findElement(By.xpath("//input[@aria-label='To recipients']")).sendKeys(Keys.ENTER);
+            System.out.println("Email address entered: " + email);
+            
+            waitUntilElementDisplayed("//input[@aria-label='Subject']");
+            driver.findElement(By.xpath("//input[@aria-label='Subject']")).sendKeys("Regarding Open Position for QA Engineer");
+            System.out.println("Subject entered");
+
+            waitUntilElementDisplayed("//div[@aria-label='Message Body']");
+            driver.findElement(By.xpath("//div[@aria-label='Message Body']"))
+            .sendKeys("Hello sir/mam,\n\nI hope you're well. I came across your job posting for a QA Automation Engineer and I'm very interested in the opportunity. I have one year of hands-on experience in QA Automation along with manual testing, and I believe my skills would be a good fit for your team.\n\nI've attached my resume for your review. I'd be happy to discuss how I can contribute.\n\nThanks, looking forward to hearing from you.\n\nBest regards,\nContact: 9724795489");
+            System.out.println("Message body entered");
+            // Copy the file to clipboard and paste into the message body
+            copyFileToClipboard("src/main/resources/Darsh shah CV.pdf");
+            driver.findElement(By.xpath("//div[@aria-label='Message Body']")).click();
+            driver.findElement(By.xpath("//div[@aria-label='Message Body']")).sendKeys(Keys.chord(Keys.CONTROL, "v"));
+            System.out.println("Resume attached");
+            Thread.sleep(5000);
+            driver.findElement(By.xpath("//div[@aria-label='Send ‪(Ctrl-Enter)‬']")).click();
+            waitUntilElementDisplayed("//span[normalize-space(text())='Message sent']");
+            System.out.println("Email sent to " + email + " at " + System.currentTimeMillis());
+            driver.close(); // close the tab
+        }
+        driver.quit(); // close the browser
     }
 
     public void waitUntilElementDisplayed(String element) {
