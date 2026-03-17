@@ -24,42 +24,28 @@ import java.io.File;
 // "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="C:\chrome-debug"
 public class SeleniumTest {
 
-    protected WebDriver driver;
+    public WebDriver driver;
 
-    @DataProvider(name = "emailData")
-    public Object[][] getEmailData() throws IOException {
-        List<String> emails = new ArrayList<>();
-        BufferedReader br = new BufferedReader(new FileReader("src/main/resources/emails.csv"));
-        String line;
-        boolean firstLine = true;
-        while ((line = br.readLine()) != null) {
-            if (firstLine) {
-                firstLine = false;
-                continue; // skip header
-            }
-            emails.add(line.trim());
-        }
-        br.close();
+@DataProvider(name = "emailData")
+public Object[][] getEmailData() throws IOException {
+    List<String> emails = new ArrayList<>();
+    BufferedReader br = new BufferedReader(new FileReader("src/main/resources/emails.csv"));
+    String line;
+    boolean firstLine = true;
 
-        int numSplits = Integer.parseInt(System.getProperty("numSplits", "1"));
-        List<List<String>> sublists = new ArrayList<>();
-        int total = emails.size();
-        int baseSize = total / numSplits;
-        int remainder = total % numSplits;
-        int start = 0;
-        for (int i = 0; i < numSplits; i++) {
-            int size = baseSize + (i < remainder ? 1 : 0);
-            sublists.add(emails.subList(start, start + size));
-            start += size;
+    while ((line = br.readLine()) != null) {
+        if (firstLine) {
+            firstLine = false;
+            continue;
         }
-
-        Object[][] data = new Object[sublists.size()][2];
-        for (int i = 0; i < sublists.size(); i++) {
-            data[i][0] = sublists.get(i);
-            data[i][1] = 9222 + i;
-        }
-        return data;
+        emails.add(line.trim());
     }
+    br.close();
+
+    Object[][] data = new Object[1][1];
+    data[0][0] = emails;
+    return data;
+}
 
     @Test(dataProvider = "emailData")
     void Setup(List<String> emails, int port) throws InterruptedException, IOException, UnsupportedFlavorException {
