@@ -88,7 +88,7 @@ public class SeleniumTest {
                 driver.findElement(By.xpath("//div[@aria-label='Message Body']"))
                         .sendKeys("Hello sir/mam,\n\n"
                                 + "I hope you're well. I came across your job posting for a QA Automation Engineer and I'm very interested in the opportunity.\n\n"
-                                + "I have one year of hands-on experience in QA Automation along with manual testing.\n\n"
+                                + "I have around one and a half years of hands-on experience in QA Automation along with manual testing.\n\n"
                                 + "I've attached my resume for your review.\n\n"
                                 + "Best regards,\nContact: 9724795489");
 
